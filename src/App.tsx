@@ -109,7 +109,7 @@ const MainContent: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+            <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -131,27 +131,27 @@ const MainContent: React.FC = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Floating Action Controls for Mobile / Quick Access */}
-      <div className="fixed bottom-4 right-4 z-30 flex items-center gap-2.5">
+      {/* Floating Action Controls for Quick Access */}
+      <div className="fixed bottom-4 right-3 sm:right-6 z-30 flex items-center gap-2">
         {/* Track Order Floating Button */}
         <button
           onClick={() => setIsTrackingModalOpen(true)}
-          className="px-3.5 py-2.5 rounded-full bg-white/95 text-[#8c2a44] border border-[#f0cdd8] shadow-lg hover:shadow-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
+          className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-full bg-white/95 text-[#8c2a44] border border-[#f0cdd8] shadow-lg hover:shadow-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-xs transition-transform active:scale-95 cursor-pointer"
           title="Track Live Order Status"
         >
           <Truck className="w-4 h-4 text-[#8c2a44]" />
-          <span className="hidden sm:inline">Track Order</span>
+          <span className="hidden md:inline">Track Order</span>
         </button>
 
         {/* Floating Cart Button */}
         <button
           onClick={() => setIsCartOpen(true)}
-          className="p-3.5 rounded-full bg-[#8c2a44] text-white shadow-xl hover:bg-[#721f35] transition-transform active:scale-95 relative cursor-pointer"
+          className="p-2.5 sm:p-3 rounded-full bg-[#8c2a44] text-white shadow-xl hover:bg-[#721f35] transition-transform active:scale-95 relative cursor-pointer"
           title="Open Cart"
         >
-          <ShoppingBag className="w-5 h-5" />
+          <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
           {cartCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 bg-[#e0567b] text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+            <span className="absolute -top-1 -right-1 bg-[#e0567b] text-white text-[10px] sm:text-[11px] font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
               {cartCount}
             </span>
           )}

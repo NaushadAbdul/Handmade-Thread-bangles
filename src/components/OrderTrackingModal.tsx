@@ -92,7 +92,7 @@ export const OrderTrackingModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
       <div 
-        className="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-8 shadow-2xl border border-[#f3dde3] relative animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-7 shadow-2xl border border-[#f3dde3] relative animate-in fade-in zoom-in-95 duration-200 max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

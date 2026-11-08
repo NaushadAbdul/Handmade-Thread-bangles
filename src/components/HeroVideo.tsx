@@ -33,23 +33,23 @@ export const HeroVideo: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <h1 className="font-serif-luxury text-4xl sm:text-5xl lg:text-6xl text-[#3b121e] tracking-tight leading-[1.15]">
+              <h1 className="font-serif-luxury text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-[#3b121e] tracking-tight leading-[1.18] sm:leading-[1.15]">
                 {settings.heroHeadline}
               </h1>
-              <p className="font-serif-luxury italic text-xl sm:text-2xl text-[#8e4559] font-light">
+              <p className="font-serif-luxury italic text-base sm:text-xl md:text-2xl text-[#8e4559] font-light">
                 Elegant · Chic · Everyday
               </p>
             </div>
 
-            <p className="text-sm sm:text-base text-[#613340] max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+            <p className="text-xs sm:text-base text-[#613340] max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
               {settings.heroSubtitle}
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
               <button
                 onClick={scrollToCatalog}
-                className="px-7 py-3.5 rounded-full bg-[#8c2a44] hover:bg-[#721f35] text-white text-sm font-semibold tracking-wide transition-all shadow-md hover:shadow-lg flex items-center gap-2 group cursor-pointer"
+                className="w-full sm:w-auto px-7 py-3 sm:py-3.5 rounded-full bg-[#8c2a44] hover:bg-[#721f35] text-white text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 group cursor-pointer"
               >
                 <span>Shop Now</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -57,7 +57,7 @@ export const HeroVideo: React.FC = () => {
 
               <button
                 onClick={() => setIsSizeGuideOpen(true)}
-                className="px-5 py-3.5 rounded-full bg-white/90 hover:bg-white text-[#6b2539] border border-[#e8bac7] text-sm font-medium transition-all shadow-sm hover:shadow flex items-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3 sm:py-3.5 rounded-full bg-white/90 hover:bg-white text-[#6b2539] border border-[#e8bac7] text-xs sm:text-sm font-medium transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Ruler className="w-4 h-4 text-[#a83a58]" />
                 <span>Bangle Size Guide</span>
@@ -65,17 +65,17 @@ export const HeroVideo: React.FC = () => {
             </div>
 
             {/* Trust bullet markers */}
-            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-[#703b49]">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#a83a58]">✓</span>
-                <span>Custom Wrist Sizing Available</span>
+            <div className="pt-2 sm:pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-2.5 sm:gap-4 text-[11px] sm:text-xs text-[#703b49]">
+              <div className="flex items-center gap-1.5 bg-white/60 sm:bg-transparent px-2.5 py-1 sm:p-0 rounded-full border sm:border-0 border-[#f2c7d4]/60">
+                <span className="text-[#a83a58] font-bold">✓</span>
+                <span>Custom Wrist Sizing</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#a83a58]">✓</span>
+              <div className="flex items-center gap-1.5 bg-white/60 sm:bg-transparent px-2.5 py-1 sm:p-0 rounded-full border sm:border-0 border-[#f2c7d4]/60">
+                <span className="text-[#a83a58] font-bold">✓</span>
                 <span>Direct UPI / QR Payments</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[#a83a58]">✓</span>
+              <div className="flex items-center gap-1.5 bg-white/60 sm:bg-transparent px-2.5 py-1 sm:p-0 rounded-full border sm:border-0 border-[#f2c7d4]/60">
+                <span className="text-[#a83a58] font-bold">✓</span>
                 <span>Live Order Tracking</span>
               </div>
             </div>
@@ -94,7 +94,7 @@ export const HeroVideo: React.FC = () => {
                 loop
                 muted
                 playsInline
-                className="w-full h-[400px] sm:h-[460px] object-cover object-center"
+                className="w-full h-[280px] sm:h-[400px] lg:h-[460px] object-cover object-center"
               />
 
               {/* Subtle Luxury Gradient Overlay */}

@@ -43,19 +43,19 @@ export const InvoiceModal: React.FC = () => {
       />
 
       {/* Main Invoice Card Container */}
-      <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-[#f0cdd8] overflow-hidden my-auto z-10 print:shadow-none print:border-none print:rounded-none print:w-full print:max-w-none">
+      <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-[#f0cdd8] overflow-hidden my-auto z-10 print:shadow-none print:border-none print:rounded-none print:w-full print:max-w-none max-h-[92vh] flex flex-col">
         
         {/* Top Control Bar (Screen only) */}
-        <div className="flex items-center justify-between px-6 py-4 bg-[#faf5f6] border-b border-[#f0cdd8] print:hidden">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 bg-[#faf5f6] border-b border-[#f0cdd8] print:hidden shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-lg bg-[#faedf1] text-[#8c2a44]">
-              <FileText className="w-5 h-5" />
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-[#3b121e]">
+              <h3 className="text-xs sm:text-base font-bold text-[#3b121e]">
                 Official Order Tax Invoice
               </h3>
-              <p className="text-[11px] text-[#8c4e5f]">
+              <p className="text-[10px] sm:text-[11px] text-[#8c4e5f]">
                 Invoice #{invoiceOrder.id} · Generated for Customer & Records
               </p>
             </div>
@@ -64,15 +64,15 @@ export const InvoiceModal: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="px-4 py-2 rounded-xl bg-[#8c2a44] hover:bg-[#721f35] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#8c2a44] hover:bg-[#721f35] text-white text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
             >
-              <Printer className="w-4 h-4" />
-              <span>Print / Save as PDF</span>
+              <Printer className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Print / PDF</span>
             </button>
 
             <button
               onClick={() => setInvoiceOrder(null)}
-              className="p-2 rounded-full hover:bg-white text-gray-400 hover:text-gray-700 transition-colors"
+              className="p-1.5 sm:p-2 rounded-full hover:bg-white text-gray-400 hover:text-gray-700 transition-colors"
               title="Close Invoice"
             >
               <X className="w-5 h-5" />
@@ -81,7 +81,7 @@ export const InvoiceModal: React.FC = () => {
         </div>
 
         {/* Printable Invoice Sheet */}
-        <div id="printable-invoice" className="p-6 sm:p-10 bg-white text-[#333] space-y-6">
+        <div id="printable-invoice" className="p-4 sm:p-8 md:p-10 bg-white text-[#333] space-y-6 overflow-y-auto flex-1">
           
           {/* 1. Header with Brand & Invoice Meta */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b-2 border-[#8c2a44]">
