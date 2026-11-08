@@ -7,6 +7,7 @@ export const Footer: React.FC = () => {
     settings, 
     currentUser,
     setIsAdminOpen, 
+    loginAsCraftedBanglesAdmin,
     setIsTrackingModalOpen, 
     setIsSizeGuideOpen,
     setSelectedCategory,
@@ -194,15 +195,20 @@ export const Footer: React.FC = () => {
           </p>
 
           <div className="flex items-center gap-4">
-            {currentUser?.isAdmin && (
-              <button
-                onClick={() => setIsAdminOpen(true)}
-                className="hover:text-[#8c2a44] transition-colors flex items-center gap-1 font-semibold text-[#8c2a44] bg-[#faedf1] px-2.5 py-1 rounded-md border border-[#edd0d8]"
-              >
-                <Settings className="w-3 h-3 text-[#8c2a44]" />
-                <span>Admin Dashboard</span>
-              </button>
-            )}
+            <button
+              onClick={() => {
+                if (currentUser?.isAdmin) {
+                  setIsAdminOpen(true);
+                } else {
+                  loginAsCraftedBanglesAdmin();
+                }
+              }}
+              className="hover:text-[#8c2a44] transition-colors flex items-center gap-1 font-semibold text-[#8c2a44] bg-[#faedf1] hover:bg-[#f7dbe4] px-2.5 py-1 rounded-md border border-[#edd0d8] cursor-pointer"
+              title="Store Owner Admin Console"
+            >
+              <Settings className="w-3 h-3 text-[#8c2a44]" />
+              <span>Admin Dashboard</span>
+            </button>
           </div>
         </div>
 

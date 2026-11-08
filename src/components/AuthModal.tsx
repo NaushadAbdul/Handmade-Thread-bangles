@@ -9,6 +9,7 @@ export const AuthModal: React.FC = () => {
     loginWithEmail, 
     loginWithGoogle,
     registerWithEmail, 
+    loginAsCraftedBanglesAdmin,
     authSuccessRedirect,
     setAuthSuccessRedirect,
     setIsCheckoutOpen 
@@ -247,8 +248,22 @@ export const AuthModal: React.FC = () => {
           </button>
         </form>
 
+        {/* Store Owner Quick Trigger */}
+        <div className="mt-4 pt-3 border-t border-[#f7e0e7]">
+          <button
+            type="button"
+            onClick={() => {
+              loginAsCraftedBanglesAdmin();
+              handleSuccess();
+            }}
+            className="w-full py-2.5 px-3 bg-[#faedf1] hover:bg-[#fad0dd] border border-[#f0cdd8] rounded-xl text-xs font-bold text-[#8c2a44] flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <ShieldCheck className="w-4 h-4 text-[#8c2a44]" />
+            <span>Store Owner One-Click Login (craftedbangles272@gmail.com)</span>
+          </button>
+        </div>
 
-        <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-[#8c4e5f]">
+        <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-[#8c4e5f]">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>Secured with Firebase Authentication</span>
         </div>

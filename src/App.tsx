@@ -31,8 +31,25 @@ const MainContent: React.FC = () => {
     cartCount,
     setIsCartOpen,
     setIsTrackingModalOpen,
+    setIsAdminOpen,
+    loginAsCraftedBanglesAdmin,
     wishlist
   } = useStore();
+
+  // Instant URL trigger for admin console (e.g. site.com/#admin)
+  React.useEffect(() => {
+    const checkAdminTrigger = () => {
+      const hash = window.location.hash.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      if (hash === '#admin' || hash === '#adminpanel' || search.includes('admin=true') || window.location.pathname.endsWith('/admin')) {
+        loginAsCraftedBanglesAdmin();
+        setIsAdminOpen(true);
+      }
+    };
+    checkAdminTrigger();
+    window.addEventListener('hashchange', checkAdminTrigger);
+    return () => window.removeEventListener('hashchange', checkAdminTrigger);
+  }, [loginAsCraftedBanglesAdmin, setIsAdminOpen]);
 
   // Filter products by category, search query
   const filteredProducts = products.filter((prod) => {

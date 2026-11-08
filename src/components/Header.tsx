@@ -25,6 +25,7 @@ export const Header: React.FC = () => {
     setIsAuthModalOpen, 
     setIsTrackingModalOpen,
     setIsAdminOpen,
+    loginAsCraftedBanglesAdmin,
     logout,
     searchQuery,
     setSearchQuery,
@@ -179,7 +180,7 @@ export const Header: React.FC = () => {
             </div>
 
             {/* Customer User Account */}
-            <div className="relative hidden sm:block">
+            <div className="relative">
               {currentUser ? (
                 <div>
                   <button
@@ -347,15 +348,20 @@ export const Header: React.FC = () => {
                 <span>Instagram: @ambitionbysha</span>
               </a>
 
-              {currentUser?.isAdmin && (
-                <button 
-                  onClick={() => { setIsAdminOpen(true); setMobileMenuOpen(false); }}
-                  className="w-full text-left py-2 px-3 rounded-lg border border-[#f5b8c9] bg-[#fce7ed] text-[#7d203a] font-bold text-xs flex items-center gap-2"
-                >
-                  <Settings className="w-4 h-4 text-[#8c2a44]" />
-                  <span>Admin Store Management</span>
-                </button>
-              )}
+              <button 
+                onClick={() => { 
+                  if (currentUser?.isAdmin) {
+                    setIsAdminOpen(true); 
+                  } else {
+                    loginAsCraftedBanglesAdmin();
+                  }
+                  setMobileMenuOpen(false); 
+                }}
+                className="w-full text-left py-2 px-3 rounded-lg border border-[#f5b8c9] bg-[#fce7ed] hover:bg-[#fad0dd] text-[#7d203a] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+              >
+                <Settings className="w-4 h-4 text-[#8c2a44]" />
+                <span>Admin Store Management</span>
+              </button>
             </div>
           </div>
         </div>

@@ -75,8 +75,6 @@ service cloud.firestore {
     }
   };
 
-  if (!isAdminOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'qr_payments' | 'orders' | 'products' | 'store_settings'>('qr_payments');
 
   // QR Code & Payment editing state
@@ -284,6 +282,8 @@ service cloud.firestore {
     });
     setSelectedOrderForEdit(null);
   };
+
+  if (!isAdminOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
