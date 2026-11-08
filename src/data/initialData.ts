@@ -92,7 +92,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Kundan Bridal Chooda',
     price: 1299,
     originalPrice: 1899,
-    image: '/public/assets/aistudio/WhatsApp_Image_2026-11-08_at_11.21.24_AM_e84ff41b.jpeg',
+    image: '/assets/aistudio/WhatsApp_Image_2026-11-08_at_11.21.24_AM_e84ff41b.jpeg',
     description: 'Signature bridal boutique design featuring coordinated silk thread kada, pearl bow hair pin, heart drop earrings, and satin blush accessories for the modern Indian bride.',
     inStock: true,
     bestseller: true,
@@ -144,88 +144,18 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
   tagline: 'Handcrafted with Love & Elegance ♡',
   announcementText: '✨ Free Shipping on Orders Above ₹999 | New Arrivals Every Week | Handcrafted with Love ✨',
   freeShippingThreshold: 999,
-  supportWhatsApp: '+91 98765 43210',
+  supportWhatsApp: '+91 73964 53236',
   supportEmail: 'craftedbangles272@gmail.com',
-  upiId: 'handmadethreadbangles@okaxis',
-  upiPayeeName: 'Handmade Thread Bangles Studio',
+  upiId: 'ambitionbysha@axl',
+  upiPayeeName: 'Ambition by Sha',
   // Default clean generated SVG QR code representation so UPI scanning works out-of-the-box
-  qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=handmadethreadbangles@okaxis%26pn=Handmade%20Thread%20Bangles%26cu=INR',
+  qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=ambitionbysha@axl%26pn=Ambition%20by%20Sha%26cu=INR',
   heroHeadline: 'Accessories that Reflect You ♡',
-  heroSubtitle: 'Handcrafted silk thread bangles, bridal kundan choodas, and custom festive sets woven with precision and passion.'
+  heroSubtitle: 'Handcrafted silk thread bangles, bridal kundan choodas, and custom festive sets woven with precision and passion.',
+  instagramUrl: 'https://www.instagram.com/ambitionbysha?utm_source=ig_web_button_share_sheet&srtk=ZDNlZDc0MzIxNw=='
 };
 
-export const INITIAL_ORDERS: Order[] = [
-  {
-    id: 'HTB-2026-8941',
-    customerName: 'Priya Sharma',
-    email: 'priya.sharma@example.com',
-    phone: '+91 98234 56789',
-    shippingAddress: {
-      fullName: 'Priya Sharma',
-      phone: '+91 98234 56789',
-      email: 'priya.sharma@example.com',
-      streetAddress: 'Flat 402, Lotus Greens Apartments, MG Road',
-      landmark: 'Near Central Mall',
-      city: 'Bengaluru',
-      state: 'Karnataka',
-      pincode: '560001',
-      customNotes: 'Please ensure extra protective bubble wrap for bridal gift box.'
-    },
-    items: [
-      {
-        id: 'htb-001_2.4',
-        product: INITIAL_PRODUCTS[0],
-        size: '2.4',
-        quantity: 1
-      },
-      {
-        id: 'htb-003_2.4',
-        product: INITIAL_PRODUCTS[2],
-        size: '2.4',
-        quantity: 1
-      }
-    ],
-    subtotal: 1448,
-    shippingFee: 0,
-    totalAmount: 1448,
-    paymentMethod: 'UPI_QR',
-    paymentStatus: 'Verified',
-    utrNumber: 'UPI482910482911',
-    status: 'Shipped / In Transit',
-    trackingNumber: 'DEL-89241092',
-    courierPartner: 'Delhivery Express',
-    estimatedDelivery: 'Tomorrow by 6:00 PM',
-    notes: 'Order dispatched from Jaipur artisan workshop.',
-    createdAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-    statusHistory: [
-      {
-        status: 'Order Placed',
-        timestamp: new Date(Date.now() - 48 * 3600 * 1000).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        description: 'Order placed and payment confirmed via UPI QR',
-        location: 'Online Store'
-      },
-      {
-        status: 'Crafting in Progress',
-        timestamp: new Date(Date.now() - 36 * 3600 * 1000).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        description: 'Artisan Priya hand-weaving pure mulberry silk thread and setting Kundan stones',
-        location: 'Studio Workshop'
-      },
-      {
-        status: 'Quality Checked & Packed',
-        timestamp: new Date(Date.now() - 16 * 3600 * 1000).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        description: 'Double inspected for finish and packed in velvet keepsake box',
-        location: 'Quality Hub'
-      },
-      {
-        status: 'Shipped / In Transit',
-        timestamp: new Date(Date.now() - 6 * 3600 * 1000).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
-        description: 'Handed over to Delhivery Express (AWB: DEL-89241092)',
-        location: 'Jaipur Air Hub'
-      }
-    ]
-  }
-];
+export const INITIAL_ORDERS: Order[] = [];
 
 export const CATEGORIES = [
   'All Bangles',

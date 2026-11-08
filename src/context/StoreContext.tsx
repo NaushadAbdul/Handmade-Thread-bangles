@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, CartItem, Order, OrderStatus, StoreSettings, UserProfile, BangleSize, ShippingAddress } from '../types';
-import { INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS, INITIAL_ORDERS } from '../data/initialData';
+import { INITIAL_PRODUCTS, INITIAL_STORE_SETTINGS, INITIAL_ORDERS, CATEGORIES } from '../data/initialData';
 import { auth, db } from '../lib/firebase';
 import { 
   signInWithEmailAndPassword, 
@@ -64,6 +64,8 @@ interface StoreContextType {
     newStatus: OrderStatus, 
     trackingData?: { trackingNumber?: string; courierPartner?: string; notes?: string; location?: string }
   ) => void;
+  deleteOrder: (orderId: string) => void;
+  clearAllOrders: () => void;
   getOrderById: (orderId: string) => Order | undefined;
 
   settings: StoreSettings;
@@ -90,11 +92,17 @@ interface StoreContextType {
   setTrackingOrderId: (id: string) => void;
   lastPlacedOrder: Order | null;
   setLastPlacedOrder: (order: Order | null) => void;
+  invoiceOrder: Order | null;
+  setInvoiceOrder: (order: Order | null) => void;
 
   selectedCategory: string;
   setSelectedCategory: (cat: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+
+  categories: string[];
+  addCategory: (name: string) => void;
+  deleteCategory: (name: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | null>(null);
@@ -105,7 +113,8 @@ const STORAGE_KEYS = {
   WISHLIST: 'htb_wishlist_v1',
   ORDERS: 'htb_orders_v1',
   SETTINGS: 'htb_settings_v1',
-  USER: 'htb_user_v1'
+  USER: 'htb_user_v1',
+  CATEGORIES: 'htb_categories_v1'
 };
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -123,7 +132,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [settings, setSettings] = useState<StoreSettings>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      return saved ? { ...INITIAL_STORE_SETTINGS, ...JSON.parse(saved) } : INITIAL_STORE_SETTINGS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.supportWhatsApp === '+91 98765 43210' || !parsed.supportWhatsApp) {
+          parsed.supportWhatsApp = '+91 73964 53236';
+        }
+        if (parsed.upiId === 'handmadethreadbangles@okaxis' || !parsed.upiId) {
+          parsed.upiId = 'ambitionbysha@axl';
+        }
+        if (parsed.upiPayeeName === 'Handmade Thread Bangles Studio' || !parsed.upiPayeeName) {
+          parsed.upiPayeeName = 'Ambition by Sha';
+        }
+        if (!parsed.qrCodeUrl || parsed.qrCodeUrl.includes('handmadethreadbangles@okaxis')) {
+          parsed.qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=ambitionbysha@axl%26pn=Ambition%20by%20Sha%26cu=INR';
+        }
+        return { ...INITIAL_STORE_SETTINGS, ...parsed };
+      }
+      return INITIAL_STORE_SETTINGS;
     } catch {
       return INITIAL_STORE_SETTINGS;
     }
@@ -153,7 +178,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [orders, setOrders] = useState<Order[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ORDERS);
-      return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+      const parsed: Order[] = saved ? JSON.parse(saved) : INITIAL_ORDERS;
+      // Filter out any mock/seed dummy orders (e.g. HTB-2026-8941 or Priya Sharma)
+      return (parsed || []).filter(
+        (o: Order) => o.id !== 'HTB-2026-8941' &&
+          !o.customerName?.toLowerCase().includes('priya sharma') &&
+          !o.email?.toLowerCase().includes('priya.sharma')
+      );
     } catch {
       return INITIAL_ORDERS;
     }
@@ -179,13 +210,50 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [selectedProductForQuickView, setSelectedProductForQuickView] = useState<Product | null>(null);
-  const [trackingOrderId, setTrackingOrderId] = useState<string>('HTB-2026-8941');
+  const [trackingOrderId, setTrackingOrderId] = useState<string>('');
   const [lastPlacedOrder, setLastPlacedOrder] = useState<Order | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<Order | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All Bangles');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Categories State
+  const [categories, setCategories] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
+      return saved ? JSON.parse(saved) : CATEGORIES;
+    } catch {
+      return CATEGORIES;
+    }
+  });
+
+  const addCategory = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setCategories(prev => {
+      if (prev.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+        return prev;
+      }
+      return [...prev, trimmed];
+    });
+  };
+
+  const deleteCategory = (name: string) => {
+    setCategories(prev => {
+      const filtered = prev.filter(c => c.toLowerCase() !== name.toLowerCase());
+      return filtered.length > 0 ? filtered : ['All Bangles'];
+    });
+  };
+
   // LocalStorage synchronizers
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+    } catch (err) {
+      console.warn('Storage error:', err);
+    }
+  }, [categories]);
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
@@ -435,7 +503,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       uid: 'admin_crafted_bangles_272',
       email: 'craftedbangles272@gmail.com',
       displayName: 'Crafted Bangles Store Owner',
-      phone: '+91 98765 43210',
+      phone: '+91 73964 53236',
       isAdmin: true
     };
     setCurrentUser(adminUser);
@@ -473,6 +541,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Product management for Admin
   const addProduct = (prodData: Omit<Product, 'id'>) => {
+    if (prodData.category && !categories.some(c => c.toLowerCase() === prodData.category.toLowerCase())) {
+      addCategory(prodData.category);
+    }
     const newProduct: Product = {
       ...prodData,
       id: 'htb-' + Date.now().toString(36),
@@ -594,6 +665,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
   };
 
+  const deleteOrder = (orderId: string) => {
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+    if (trackingOrderId === orderId) {
+      setTrackingOrderId('');
+    }
+  };
+
+  const clearAllOrders = () => {
+    setOrders([]);
+    setTrackingOrderId('');
+  };
+
   const getOrderById = (orderId: string) => {
     const cleanId = orderId.trim().toUpperCase();
     return orders.find(o => o.id.toUpperCase() === cleanId || o.phone.includes(cleanId) || o.email.toLowerCase() === cleanId.toLowerCase());
@@ -626,6 +709,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       orders,
       createOrder,
       updateOrderStatus,
+      deleteOrder,
+      clearAllOrders,
       getOrderById,
       settings,
       updateSettings,
@@ -649,10 +734,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setTrackingOrderId,
       lastPlacedOrder,
       setLastPlacedOrder,
+      invoiceOrder,
+      setInvoiceOrder,
       selectedCategory,
       setSelectedCategory,
       searchQuery,
       setSearchQuery,
+      categories,
+      addCategory,
+      deleteCategory,
     }}>
       {children}
     </StoreContext.Provider>

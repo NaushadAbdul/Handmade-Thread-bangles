@@ -2,7 +2,6 @@ import React from 'react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import { Header } from './components/Header';
 import { HeroVideo } from './components/HeroVideo';
-import { CategoryNav } from './components/CategoryNav';
 import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
 import { CartDrawer } from './components/CartDrawer';
@@ -10,13 +9,13 @@ import { AuthModal } from './components/AuthModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { AdminPanel } from './components/AdminPanel';
+import { InvoiceModal } from './components/InvoiceModal';
 import { BangleSizeGuideModal } from './components/BangleSizeGuideModal';
 import { GiftSection } from './components/GiftSection';
 import { ValueProps } from './components/ValueProps';
 import { InstagramGallery } from './components/InstagramGallery';
 import { Footer } from './components/Footer';
-import { ShoppingBag, Truck, Heart, SlidersHorizontal, Sparkles } from 'lucide-react';
-import { CATEGORIES } from './data/initialData';
+import { ShoppingBag, Truck, Heart } from 'lucide-react';
 
 const MainContent: React.FC = () => {
   const { 
@@ -55,9 +54,6 @@ const MainContent: React.FC = () => {
         {/* Hero Section with Video */}
         <HeroVideo />
 
-        {/* Shop by Category Pods */}
-        <CategoryNav />
-
         {/* Product Catalog Section */}
         <section id="catalog-section" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
@@ -77,34 +73,20 @@ const MainContent: React.FC = () => {
             </p>
           </div>
 
-          {/* Interactive Category Tabs Filter */}
-          <div className="flex items-center justify-center gap-1.5 overflow-x-auto no-scrollbar pb-3 mb-8 px-2">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => { setSelectedCategory(cat); setSearchQuery(''); }}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  selectedCategory === cat && !searchQuery
-                    ? 'bg-[#8c2a44] text-white shadow-sm font-semibold'
-                    : 'bg-white text-[#6b3544] hover:bg-[#faedf1] border border-[#f0cdd8]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
           {/* Active Search / Filters summary */}
-          {searchQuery && (
+          {(searchQuery || selectedCategory !== 'All Bangles') && (
             <div className="mb-6 flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-[#f0cdd8] text-xs">
               <span className="text-[#551d2e]">
-                Found <strong>{filteredProducts.length}</strong> bangles matching &apos;{searchQuery}&apos;
+                {searchQuery 
+                  ? <>Found <strong>{filteredProducts.length}</strong> bangles matching &apos;{searchQuery}&apos;</>
+                  : <>Showing <strong>{selectedCategory}</strong> ({filteredProducts.length})</>
+                }
               </span>
               <button
-                onClick={() => setSearchQuery('')}
-                className="text-[#8c2a44] hover:underline font-semibold"
+                onClick={() => { setSelectedCategory('All Bangles'); setSearchQuery(''); }}
+                className="text-[#8c2a44] hover:underline font-semibold cursor-pointer"
               >
-                Clear Search
+                Clear Filter
               </button>
             </div>
           )}
@@ -186,6 +168,7 @@ const MainContent: React.FC = () => {
       <CheckoutModal />
       <OrderTrackingModal />
       <AdminPanel />
+      <InvoiceModal />
       <BangleSizeGuideModal
         isOpen={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}

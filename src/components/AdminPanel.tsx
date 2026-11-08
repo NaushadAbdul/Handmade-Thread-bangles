@@ -16,11 +16,11 @@ import {
   Globe, 
   AlertCircle,
   ExternalLink,
-  Eye
+  Eye,
+  FileText
 } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 import { OrderStatus, BangleSize, Product } from '../types';
-import { CATEGORIES } from '../data/initialData';
 
 export const AdminPanel: React.FC = () => {
   const { 
@@ -31,9 +31,15 @@ export const AdminPanel: React.FC = () => {
     updateProduct, 
     deleteProduct, 
     orders, 
-    updateOrderStatus, 
+    updateOrderStatus,
+    deleteOrder,
+    clearAllOrders, 
+    setInvoiceOrder,
     settings, 
-    updateSettings 
+    updateSettings,
+    categories,
+    addCategory,
+    deleteCategory
   } = useStore();
 
   if (!isAdminOpen) return null;
@@ -60,6 +66,9 @@ export const AdminPanel: React.FC = () => {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [newProdName, setNewProdName] = useState('');
   const [newProdCategory, setNewProdCategory] = useState('Silk Thread Bangles');
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [newCategoryManagerInput, setNewCategoryManagerInput] = useState('');
   const [newProdPrice, setNewProdPrice] = useState(699);
   const [newProdOrigPrice, setNewProdOrigPrice] = useState(999);
   const [newProdImage, setNewProdImage] = useState('/src/assets/images/bangles_silk_kundan_set_1794119599359.jpg');
@@ -68,6 +77,20 @@ export const AdminPanel: React.FC = () => {
   const [newProdCraftingTime, setNewProdCraftingTime] = useState('2-3 Days Handcrafted');
   const [newProdSizes, setNewProdSizes] = useState<BangleSize[]>(['2.4', '2.6', '2.8']);
   const [newProdBestseller, setNewProdBestseller] = useState(false);
+
+  // Edit Product state
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editPrice, setEditPrice] = useState(0);
+  const [editOrigPrice, setEditOrigPrice] = useState(0);
+  const [editImage, setEditImage] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editSizes, setEditSizes] = useState<BangleSize[]>([]);
+  const [editBestseller, setEditBestseller] = useState(false);
+  const [editInStock, setEditInStock] = useState(true);
+  const [isEditCustomCategory, setIsEditCustomCategory] = useState(false);
+  const [editCustomCategoryInput, setEditCustomCategoryInput] = useState('');
 
   // Order status update state
   const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<string | null>(null);
@@ -118,9 +141,14 @@ export const AdminPanel: React.FC = () => {
     e.preventDefault();
     if (!newProdName.trim()) return;
 
+    const chosenCategory = (isCustomCategory ? customCategoryInput.trim() : newProdCategory.trim()) || 'Silk Thread Bangles';
+    if (chosenCategory) {
+      addCategory(chosenCategory);
+    }
+
     addProduct({
       name: newProdName,
-      category: newProdCategory,
+      category: chosenCategory,
       price: Number(newProdPrice),
       originalPrice: Number(newProdOrigPrice),
       image: newProdImage,
@@ -136,6 +164,8 @@ export const AdminPanel: React.FC = () => {
     // Reset form
     setNewProdName('');
     setNewProdDesc('');
+    setIsCustomCategory(false);
+    setCustomCategoryInput('');
   };
 
   const toggleSize = (sz: BangleSize) => {
@@ -148,12 +178,76 @@ export const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleOpenEditModal = (prod: Product) => {
+    setEditingProduct(prod);
+    setEditName(prod.name);
+    setEditCategory(prod.category);
+    setEditPrice(prod.price);
+    setEditOrigPrice(prod.originalPrice || prod.price);
+    setEditImage(prod.image);
+    setEditDesc(prod.description);
+    setEditSizes(prod.sizes || ['2.4', '2.6', '2.8']);
+    setEditBestseller(!!prod.bestseller);
+    setEditInStock(prod.inStock);
+    setIsEditCustomCategory(!categories.includes(prod.category));
+    setEditCustomCategoryInput(prod.category);
+  };
+
+  const toggleEditSize = (sz: BangleSize) => {
+    if (editSizes.includes(sz)) {
+      if (editSizes.length > 1) {
+        setEditSizes(editSizes.filter(s => s !== sz));
+      }
+    } else {
+      setEditSizes([...editSizes, sz]);
+    }
+  };
+
+  const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (isEdit) {
+          setEditImage(reader.result as string);
+        } else {
+          setNewProdImage(reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProductEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    const chosenCat = (isEditCustomCategory ? editCustomCategoryInput.trim() : editCategory.trim()) || editingProduct.category;
+    if (chosenCat) {
+      addCategory(chosenCat);
+    }
+
+    updateProduct(editingProduct.id, {
+      name: editName,
+      category: chosenCat,
+      price: Number(editPrice),
+      originalPrice: Number(editOrigPrice),
+      image: editImage,
+      description: editDesc,
+      sizes: editSizes,
+      bestseller: editBestseller,
+      inStock: editInStock,
+    });
+
+    setEditingProduct(null);
+  };
+
   const handleUpdateOrderStatus = (orderId: string) => {
     updateOrderStatus(orderId, newStatusValue, {
       courierPartner: courierInput || undefined,
       trackingNumber: trackingNumberInput || undefined,
       notes: statusNoteInput || undefined,
-      location: 'Artisan Jaipuri Workshop'
+      location: 'Artisan Vijayawada Workshop'
     });
     setSelectedOrderForEdit(null);
   };
@@ -337,13 +431,16 @@ export const AdminPanel: React.FC = () => {
                     </p>
                     <div className="p-3 bg-white rounded-2xl border-2 border-[#d8899f] shadow-md inline-block">
                       <img
-                        src={qrCodeUrlInput || 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=handmadethreadbangles@okaxis'}
+                        src={qrCodeUrlInput || 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=ambitionbysha@axl'}
                         alt="Admin QR Code"
                         className="w-44 h-44 object-contain"
                       />
                     </div>
                     <p className="text-xs font-bold text-[#8c2a44] mt-2">{payeeNameInput}</p>
                     <p className="text-xs font-mono text-[#703b49]">{upiIdInput}</p>
+                    <p className="text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full mt-2 font-medium">
+                      ✨ Auto-embeds exact order amount (e.g. ₹498) on customer scan
+                    </p>
                   </div>
 
                 </div>
@@ -365,7 +462,7 @@ export const AdminPanel: React.FC = () => {
           {activeTab === 'orders' && (
             <div className="space-y-6">
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-[#3b121e]">
                     Customer Orders & Real-Time Tracking Dispatch
@@ -374,11 +471,29 @@ export const AdminPanel: React.FC = () => {
                     Update order progress below. Customer tracking timelines will update instantaneously!
                   </p>
                 </div>
+                {orders.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to remove all customer orders? This action cannot be undone.')) {
+                        clearAllOrders();
+                      }
+                    }}
+                    className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold hover:bg-rose-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear All Orders</span>
+                  </button>
+                )}
               </div>
 
               {orders.length === 0 ? (
-                <div className="p-8 text-center text-xs text-[#8c4e5f] bg-[#faf5f6] rounded-2xl">
-                  No orders placed yet.
+                <div className="p-10 text-center bg-[#faf5f6] rounded-2xl border border-dashed border-[#e8bac7] space-y-2">
+                  <Package className="w-8 h-8 text-[#a06877] mx-auto stroke-1" />
+                  <p className="text-sm font-semibold text-[#3b121e]">No Customer Orders Yet</p>
+                  <p className="text-xs text-[#8c4e5f] font-light max-w-sm mx-auto">
+                    When customers place orders via checkout, they will appear right here for tracking dispatch, status updates, and management.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -421,6 +536,28 @@ export const AdminPanel: React.FC = () => {
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                             <span>Update Live Tracking Status</span>
+                          </button>
+
+                          <button
+                            onClick={() => setInvoiceOrder(ord)}
+                            className="px-3 py-1.5 rounded-lg bg-white border border-[#e8bac7] text-[#521b2a] text-xs font-semibold hover:bg-[#faedf1] transition-colors flex items-center gap-1 cursor-pointer"
+                            title="View / Download Order Invoice"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#8c2a44]" />
+                            <span>Invoice</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete order #${ord.id}?`)) {
+                                deleteOrder(ord.id);
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold hover:bg-rose-100 hover:text-rose-700 transition-colors flex items-center gap-1 cursor-pointer"
+                            title="Delete this order"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete</span>
                           </button>
                         </div>
                       </div>
@@ -564,8 +701,72 @@ export const AdminPanel: React.FC = () => {
                   className="px-4 py-2 rounded-xl bg-[#8c2a44] text-white text-xs font-semibold hover:bg-[#721f35] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add New Bangles</span>
+                  <span>Add New Product</span>
                 </button>
+              </div>
+
+              {/* Custom Category Management Bar */}
+              <div className="bg-[#fcf0f3] border border-[#f0cdd8] rounded-2xl p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#3b121e]">Manage Your Store Categories ({categories.length})</h4>
+                    <p className="text-[11px] text-[#8c4e5f]">Add your custom categories or delete the ones you don&apos;t want.</p>
+                  </div>
+                  
+                  {/* Quick add category input */}
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      placeholder="Add new category..."
+                      value={newCategoryManagerInput}
+                      onChange={(e) => setNewCategoryManagerInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (newCategoryManagerInput.trim()) {
+                            addCategory(newCategoryManagerInput.trim());
+                            setNewCategoryManagerInput('');
+                          }
+                        }
+                      }}
+                      className="px-3 py-1.5 text-xs bg-white border border-[#e8bac7] focus:border-[#8c2a44] rounded-lg outline-none text-[#3b121e] min-w-[170px]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newCategoryManagerInput.trim()) {
+                          addCategory(newCategoryManagerInput.trim());
+                          setNewCategoryManagerInput('');
+                        }
+                      }}
+                      className="px-3 py-1.5 bg-[#8c2a44] text-white text-xs font-semibold rounded-lg hover:bg-[#721f35] transition-colors cursor-pointer shrink-0"
+                    >
+                      + Add Category
+                    </button>
+                  </div>
+                </div>
+
+                {/* Category chips list with remove button */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {categories.map((cat) => (
+                    <span
+                      key={cat}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white border border-[#e8bac7] text-[#551d2e] shadow-2xs group"
+                    >
+                      <span>{cat}</span>
+                      {cat !== 'All Bangles' && (
+                        <button
+                          type="button"
+                          onClick={() => deleteCategory(cat)}
+                          className="text-gray-400 hover:text-rose-600 font-bold ml-1 text-sm leading-none p-0.5 cursor-pointer"
+                          title={`Delete "${cat}" category`}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               {/* Product Grid Table */}
@@ -584,18 +785,32 @@ export const AdminPanel: React.FC = () => {
                         <span className="text-xs font-bold text-[#8c2a44]">₹{prod.price}</span>
                         {prod.originalPrice && <span className="text-[10px] text-gray-400 line-through">₹{prod.originalPrice}</span>}
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1.5 mt-1">
                         <button
+                          type="button"
                           onClick={() => updateProduct(prod.id, { inStock: !prod.inStock })}
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
-                            prod.inStock ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700'
+                          className={`text-[10px] px-2 py-0.5 rounded font-medium cursor-pointer transition-colors ${
+                            prod.inStock ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                           }`}
                         >
                           {prod.inStock ? 'In Stock' : 'Out of Stock'}
                         </button>
                         <button
-                          onClick={() => deleteProduct(prod.id)}
-                          className="text-gray-400 hover:text-rose-600 transition-colors p-0.5"
+                          type="button"
+                          onClick={() => handleOpenEditModal(prod)}
+                          className="p-1 rounded hover:bg-[#faedf1] text-gray-500 hover:text-[#8c2a44] transition-colors cursor-pointer"
+                          title="Edit Product Details"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete "${prod.name}"?`)) {
+                              deleteProduct(prod.id);
+                            }
+                          }}
+                          className="p-1 rounded hover:bg-rose-50 text-gray-400 hover:text-rose-600 transition-colors cursor-pointer"
                           title="Delete Product"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -632,16 +847,54 @@ export const AdminPanel: React.FC = () => {
 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block font-semibold text-[#521b2a] mb-1">Category</label>
-                          <select
-                            value={newProdCategory}
-                            onChange={(e) => setNewProdCategory(e.target.value)}
-                            className="w-full px-2 py-1.5 border border-[#e8bac7] rounded-lg outline-none bg-white"
-                          >
-                            {CATEGORIES.filter(c => c !== 'All Bangles').map(c => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </select>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block font-semibold text-[#521b2a]">Category</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsCustomCategory(!isCustomCategory);
+                                if (!isCustomCategory) {
+                                  setCustomCategoryInput('');
+                                }
+                              }}
+                              className="text-[10px] text-[#8c2a44] hover:underline font-bold cursor-pointer"
+                            >
+                              {isCustomCategory ? "← Choose existing" : "+ Type custom"}
+                            </button>
+                          </div>
+
+                          {isCustomCategory ? (
+                            <input
+                              type="text"
+                              required
+                              autoFocus
+                              placeholder="Type category (e.g. Earrings, Hair Clips...)"
+                              value={customCategoryInput}
+                              onChange={(e) => {
+                                setCustomCategoryInput(e.target.value);
+                                setNewProdCategory(e.target.value);
+                              }}
+                              className="w-full px-2.5 py-1.5 border-2 border-[#8c2a44] rounded-lg outline-none bg-white text-xs font-medium text-[#3b121e]"
+                            />
+                          ) : (
+                            <select
+                              value={newProdCategory}
+                              onChange={(e) => {
+                                if (e.target.value === '__NEW_CUSTOM__') {
+                                  setIsCustomCategory(true);
+                                  setCustomCategoryInput('');
+                                } else {
+                                  setNewProdCategory(e.target.value);
+                                }
+                              }}
+                              className="w-full px-2 py-1.5 border border-[#e8bac7] rounded-lg outline-none bg-white text-xs"
+                            >
+                              {categories.filter(c => c !== 'All Bangles').map(c => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                              <option value="__NEW_CUSTOM__">+ Type Custom Category...</option>
+                            </select>
+                          )}
                         </div>
 
                         <div>
@@ -657,14 +910,24 @@ export const AdminPanel: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block font-semibold text-[#521b2a] mb-1">Image URL</label>
+                        <label className="block font-semibold text-[#521b2a] mb-1">Image URL or Upload</label>
                         <input
                           type="text"
                           required
                           value={newProdImage}
                           onChange={(e) => setNewProdImage(e.target.value)}
-                          className="w-full px-3 py-1.5 border border-[#e8bac7] rounded-lg outline-none"
+                          className="w-full px-3 py-1.5 border border-[#e8bac7] rounded-lg outline-none mb-1.5"
                         />
+                        <label className="flex items-center justify-center gap-2 p-2 border border-dashed border-[#e8bac7] rounded-lg bg-[#faf5f6] hover:bg-[#faedf1] cursor-pointer text-[11px] text-[#703b49] transition-colors">
+                          <Upload className="w-3.5 h-3.5 text-[#8c2a44]" />
+                          <span>Upload photo from device</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleProductImageUpload(e, false)}
+                            className="hidden"
+                          />
+                        </label>
                       </div>
 
                       <div>
@@ -722,6 +985,199 @@ export const AdminPanel: React.FC = () => {
                           className="px-5 py-1.5 rounded-lg bg-[#8c2a44] text-white font-semibold"
                         >
                           Add Product
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Edit Product Modal */}
+              {editingProduct && (
+                <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 backdrop-blur-xs">
+                  <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#f0cdd8] space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+                    <div className="flex justify-between items-center border-b border-[#f3dde3] pb-3">
+                      <div>
+                        <h4 className="font-serif-luxury text-lg font-bold text-[#3b121e]">Edit Product</h4>
+                        <p className="text-[11px] text-[#8c4e5f]">Update details, category, pricing, sizes, or photo</p>
+                      </div>
+                      <button onClick={() => setEditingProduct(null)} className="text-gray-400 hover:text-black p-1 cursor-pointer">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSaveProductEdit} className="space-y-3.5 text-xs">
+                      <div>
+                        <label className="block font-semibold text-[#521b2a] mb-1">Product Title</label>
+                        <input
+                          type="text"
+                          required
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full px-3 py-1.5 border border-[#e8bac7] focus:border-[#8c2a44] rounded-lg outline-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block font-semibold text-[#521b2a]">Category</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsEditCustomCategory(!isEditCustomCategory);
+                                if (!isEditCustomCategory) setEditCustomCategoryInput('');
+                              }}
+                              className="text-[10px] text-[#8c2a44] hover:underline font-bold cursor-pointer"
+                            >
+                              {isEditCustomCategory ? "← Existing" : "+ Custom"}
+                            </button>
+                          </div>
+
+                          {isEditCustomCategory ? (
+                            <input
+                              type="text"
+                              required
+                              placeholder="Type category..."
+                              value={editCustomCategoryInput}
+                              onChange={(e) => {
+                                setEditCustomCategoryInput(e.target.value);
+                                setEditCategory(e.target.value);
+                              }}
+                              className="w-full px-2.5 py-1.5 border-2 border-[#8c2a44] rounded-lg outline-none bg-white text-xs font-medium text-[#3b121e]"
+                            />
+                          ) : (
+                            <select
+                              value={editCategory}
+                              onChange={(e) => {
+                                if (e.target.value === '__NEW_CUSTOM__') {
+                                  setIsEditCustomCategory(true);
+                                  setEditCustomCategoryInput('');
+                                } else {
+                                  setEditCategory(e.target.value);
+                                }
+                              }}
+                              className="w-full px-2 py-1.5 border border-[#e8bac7] rounded-lg outline-none bg-white text-xs"
+                            >
+                              {categories.filter(c => c !== 'All Bangles').map(c => (
+                                <option key={c} value={c}>{c}</option>
+                              ))}
+                              <option value="__NEW_CUSTOM__">+ Type Custom...</option>
+                            </select>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-[#521b2a] mb-1">Selling Price (₹)</label>
+                          <input
+                            type="number"
+                            required
+                            value={editPrice}
+                            onChange={(e) => setEditPrice(Number(e.target.value))}
+                            className="w-full px-3 py-1.5 border border-[#e8bac7] focus:border-[#8c2a44] rounded-lg outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block font-semibold text-[#521b2a] mb-1">Original / MRP Price (₹)</label>
+                          <input
+                            type="number"
+                            value={editOrigPrice}
+                            onChange={(e) => setEditOrigPrice(Number(e.target.value))}
+                            className="w-full px-3 py-1.5 border border-[#e8bac7] focus:border-[#8c2a44] rounded-lg outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold text-[#521b2a] mb-1">Stock Status</label>
+                          <select
+                            value={editInStock ? 'true' : 'false'}
+                            onChange={(e) => setEditInStock(e.target.value === 'true')}
+                            className="w-full px-2 py-1.5 border border-[#e8bac7] rounded-lg outline-none bg-white text-xs"
+                          >
+                            <option value="true">In Stock</option>
+                            <option value="false">Out of Stock</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-[#521b2a] mb-1">Product Photo URL or Upload</label>
+                        <input
+                          type="text"
+                          required
+                          value={editImage}
+                          onChange={(e) => setEditImage(e.target.value)}
+                          className="w-full px-3 py-1.5 border border-[#e8bac7] focus:border-[#8c2a44] rounded-lg outline-none mb-1.5"
+                        />
+                        <label className="flex items-center justify-center gap-2 p-2 border border-dashed border-[#e8bac7] rounded-lg bg-[#faf5f6] hover:bg-[#faedf1] cursor-pointer text-[11px] text-[#703b49] transition-colors">
+                          <Upload className="w-3.5 h-3.5 text-[#8c2a44]" />
+                          <span>Upload new photo from device</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleProductImageUpload(e, true)}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-[#521b2a] mb-1">Available Sizes</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(['2.2', '2.4', '2.6', '2.8', '2.10', 'Custom Bridal'] as BangleSize[]).map((sz) => (
+                            <button
+                              key={sz}
+                              type="button"
+                              onClick={() => toggleEditSize(sz)}
+                              className={`px-2.5 py-1 rounded text-[11px] font-medium border cursor-pointer transition-all ${
+                                editSizes.includes(sz) ? 'bg-[#8c2a44] text-white border-[#8c2a44]' : 'bg-gray-50 border-gray-200 text-gray-700'
+                              }`}
+                            >
+                              {sz}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block font-semibold text-[#521b2a] mb-1">Description</label>
+                        <textarea
+                          rows={2}
+                          value={editDesc}
+                          onChange={(e) => setEditDesc(e.target.value)}
+                          className="w-full px-3 py-1.5 border border-[#e8bac7] focus:border-[#8c2a44] rounded-lg outline-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="checkbox"
+                          id="edit-bestseller-check"
+                          checked={editBestseller}
+                          onChange={(e) => setEditBestseller(e.target.checked)}
+                          className="rounded text-[#8c2a44]"
+                        />
+                        <label htmlFor="edit-bestseller-check" className="text-xs text-[#521b2a]">
+                          Feature as Bestseller on Homepage
+                        </label>
+                      </div>
+
+                      <div className="pt-3 flex justify-end gap-2 border-t border-[#f0cdd8]">
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct(null)}
+                          className="px-4 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-1.5 rounded-lg bg-[#8c2a44] text-white font-semibold hover:bg-[#721f35] transition-colors cursor-pointer"
+                        >
+                          Save Changes
                         </button>
                       </div>
                     </form>

@@ -29,7 +29,7 @@ export const InstagramGallery: React.FC = () => {
       caption: 'The satin gift box presentation made my sister tear up with joy.'
     },
     {
-      img: '/public/assets/aistudio/WhatsApp_Image_2026-11-08_at_11.21.24_AM_e84ff41b.jpeg',
+      img: '/assets/aistudio/WhatsApp_Image_2026-11-08_at_11.21.24_AM_e84ff41b.jpeg',
       tag: '@priya_couture',
       caption: 'Coordinated hair bows, earrings and silk kada. The ultimate aesthetic boutique vibe!'
     }
@@ -40,10 +40,15 @@ export const InstagramGallery: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
         {/* Instagram Tag Header */}
-        <div className="inline-flex items-center gap-2 text-sm sm:text-base font-bold text-[#8c2a44] mb-1">
-          <Instagram className="w-4 h-4" />
-          <span>#HandmadeThreadBanglesStyle</span>
-        </div>
+        <a 
+          href="https://www.instagram.com/ambitionbysha?utm_source=ig_web_button_share_sheet&srtk=ZDNlZDc0MzIxNw=="
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 text-sm sm:text-base font-bold text-[#8c2a44] hover:text-[#d84d72] mb-1 group transition-colors"
+        >
+          <Instagram className="w-4 h-4 text-[#d84d72] group-hover:scale-110 transition-transform" />
+          <span className="hover:underline">@ambitionbysha · Follow Us on Instagram</span>
+        </a>
 
         <h3 className="font-serif-luxury text-2xl sm:text-3xl text-[#3b121e] mb-2">
           See how our customers style their favourites ♡

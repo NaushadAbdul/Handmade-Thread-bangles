@@ -56,6 +56,12 @@ export const CheckoutModal: React.FC = () => {
   const shippingFee = cartSubtotal >= freeShippingThreshold ? 0 : 99;
   const grandTotal = cartSubtotal + shippingFee;
 
+  // Dynamic UPI Intent URI with exact amount and merchant details
+  const upiIntentUri = `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.upiPayeeName)}&am=${grandTotal}&cu=INR&tn=${encodeURIComponent(`Order Payment - ${settings.brandName || 'Handmade Bangles'}`)}`;
+
+  // Dynamic QR code with exact amount encoded so scanning in GPay/PhonePe/Paytm/Cred/BHIM auto-fills the exact price
+  const dynamicCheckoutQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=${encodeURIComponent(upiIntentUri)}`;
+
   // Copy UPI ID
   const copyUpiId = () => {
     navigator.clipboard.writeText(settings.upiId);
@@ -441,12 +447,16 @@ export const CheckoutModal: React.FC = () => {
                 <div className="flex flex-col items-center justify-center py-2">
                   <div className="p-3 bg-white rounded-2xl border-2 border-[#d8899f] shadow-md inline-block">
                     <img
-                      src={settings.qrCodeUrl || 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=handmadethreadbangles@okaxis'}
-                      alt="Admin UPI QR Code"
-                      className="w-44 h-44 sm:w-48 sm:h-48 object-contain"
+                      src={dynamicCheckoutQrUrl}
+                      alt={`Scan to pay ₹${grandTotal} via UPI`}
+                      className="w-48 h-48 sm:w-52 sm:h-52 object-contain"
                     />
                   </div>
-                  <p className="text-[11px] text-[#703b49] font-medium mt-2">
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-medium mt-2.5">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Exact amount <strong>₹{grandTotal.toLocaleString('en-IN')}</strong> auto-loads upon scanning</span>
+                  </div>
+                  <p className="text-[11px] text-[#703b49] font-medium mt-1">
                     Payee: <strong>{settings.upiPayeeName}</strong>
                   </p>
                 </div>
@@ -470,7 +480,7 @@ export const CheckoutModal: React.FC = () => {
 
                     {/* Mobile intent direct link */}
                     <a
-                      href={`upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.upiPayeeName)}&am=${grandTotal}&cu=INR`}
+                      href={upiIntentUri}
                       className="px-3 py-1.5 rounded-lg bg-[#8c2a44] text-white text-xs font-medium hover:bg-[#721f35] transition-colors flex items-center gap-1"
                     >
                       <span>Pay in App</span>

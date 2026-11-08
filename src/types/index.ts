@@ -98,4 +98,5 @@ export interface StoreSettings {
   qrCodeUrl: string;
   heroHeadline: string;
   heroSubtitle: string;
+  instagramUrl?: string;
 }

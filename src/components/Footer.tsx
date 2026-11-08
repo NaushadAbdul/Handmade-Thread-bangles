@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, ArrowRight, Heart, Phone, MapPin, Settings, Check, Truck, Ruler } from 'lucide-react';
+import { Mail, ArrowRight, Heart, Phone, MapPin, Settings, Check, Truck, Ruler, Instagram } from 'lucide-react';
 import { useStore } from '../context/StoreContext';
 
 export const Footer: React.FC = () => {
@@ -9,7 +9,8 @@ export const Footer: React.FC = () => {
     setIsAdminOpen, 
     setIsTrackingModalOpen, 
     setIsSizeGuideOpen,
-    setSelectedCategory 
+    setSelectedCategory,
+    categories
   } = useStore();
 
   const [emailSub, setEmailSub] = useState('');
@@ -89,7 +90,7 @@ export const Footer: React.FC = () => {
               Every single bangle is meticulously hand-wound with pure mulberry silk thread and hand-embellished with authentic Kundan stones and seed pearls by our heritage artisans.
             </p>
             <div className="flex items-center gap-2 text-[11px] text-[#8c2a44] font-medium pt-1">
-              <span>Made with love in Jaipur, India</span>
+              <span>Made with love in Vijayawada , Andhra Pradesh</span>
               <Heart className="w-3.5 h-3.5 fill-current" />
             </div>
           </div>
@@ -100,31 +101,13 @@ export const Footer: React.FC = () => {
               Collections
             </h5>
             <ul className="space-y-1.5 text-[#703b49]">
-              <li>
-                <button onClick={() => handleCategoryClick('Silk Thread Bangles')} className="hover:text-[#8c2a44] transition-colors">
-                  Silk Thread Bangles
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleCategoryClick('Kundan Bridal Chooda')} className="hover:text-[#8c2a44] transition-colors">
-                  Kundan Bridal Chooda
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleCategoryClick('Zari Velvet Bangles')} className="hover:text-[#8c2a44] transition-colors">
-                  Zari Velvet Kada Stacks
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleCategoryClick('Pearl Kada & Latkan')} className="hover:text-[#8c2a44] transition-colors">
-                  Pearl Kada & Latkans
-                </button>
-              </li>
-              <li>
-                <button onClick={() => handleCategoryClick('Gift Hampers')} className="hover:text-[#8c2a44] transition-colors">
-                  Bridal Gift Boxes
-                </button>
-              </li>
+              {categories.filter(c => c !== 'All Bangles').slice(0, 6).map((cat) => (
+                <li key={cat}>
+                  <button onClick={() => handleCategoryClick(cat)} className="hover:text-[#8c2a44] transition-colors">
+                    {cat}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -172,7 +155,7 @@ export const Footer: React.FC = () => {
             <p className="text-[#703b49] font-light">
               Have a custom bridal color request or need urgent wedding orders?
             </p>
-            <div className="space-y-1.5 text-[#551d2e] pt-1">
+            <div className="space-y-2 text-[#551d2e] pt-1">
               <a 
                 href={`https://wa.me/${settings.supportWhatsApp.replace(/[^0-9]/g, '')}`} 
                 target="_blank"
@@ -188,8 +171,17 @@ export const Footer: React.FC = () => {
               </p>
               <p className="flex items-center gap-2 text-[#703b49]">
                 <MapPin className="w-3.5 h-3.5 text-[#8c2a44]" />
-                <span>Jaipur Artisan Hub, Rajasthan</span>
+                <span>Vijayawada , Andhra Pradesh</span>
               </p>
+              <a 
+                href="https://www.instagram.com/ambitionbysha?utm_source=ig_web_button_share_sheet&srtk=ZDNlZDc0MzIxNw==" 
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 text-[#b02a55] font-semibold hover:underline pt-0.5"
+              >
+                <Instagram className="w-3.5 h-3.5 text-[#d84d72]" />
+                <span>Instagram: @ambitionbysha</span>
+              </a>
             </div>
           </div>
 

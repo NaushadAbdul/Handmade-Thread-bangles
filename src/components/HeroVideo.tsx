@@ -89,7 +89,7 @@ export const HeroVideo: React.FC = () => {
               {/* Actual Video */}
               <video
                 ref={videoRef}
-                src="/public/assets/aistudio/Woman_admiring_gold_glass_bangles_b09230af_1080p_088b10ff.mp4"
+                src="/assets/aistudio/Woman_admiring_gold_glass_bangles_b09230af_1080p_088b10ff.mp4"
                 autoPlay
                 loop
                 muted
