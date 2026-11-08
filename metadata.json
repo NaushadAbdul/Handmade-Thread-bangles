@@ -1,0 +1,6 @@
+{
+  "name": "Handmade Thread bangles",
+  "description": "Exquisite handcrafted silk thread bangles, bridal kundan chooda sets, custom sizes, QR payments, and real-time order tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
