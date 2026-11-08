@@ -751,6 +751,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       await setDoc(doc(db, 'settings', 'store_settings'), settings, { merge: true });
       await setDoc(doc(db, 'settings', 'store_categories'), { list: categories }, { merge: true });
+      for (const order of orders) {
+        await setDoc(doc(db, 'orders', order.id), order, { merge: true });
+      }
       setFirestoreStatus('connected');
     } catch (err: any) {
       if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
@@ -864,16 +867,29 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
   };
 
-  const deleteOrder = (orderId: string) => {
+  const deleteOrder = async (orderId: string) => {
     setOrders(prev => prev.filter(o => o.id !== orderId));
     if (trackingOrderId === orderId) {
       setTrackingOrderId('');
     }
+    try {
+      await deleteDoc(doc(db, 'orders', orderId));
+    } catch (e) {
+      console.warn('Firestore deleteOrder error:', e);
+    }
   };
 
-  const clearAllOrders = () => {
+  const clearAllOrders = async () => {
+    const toDelete = [...orders];
     setOrders([]);
     setTrackingOrderId('');
+    try {
+      for (const o of toDelete) {
+        await deleteDoc(doc(db, 'orders', o.id));
+      }
+    } catch (e) {
+      console.warn('Firestore clearAllOrders error:', e);
+    }
   };
 
   const getOrderById = (orderId: string) => {
