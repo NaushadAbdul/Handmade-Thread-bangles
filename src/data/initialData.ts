@@ -21,7 +21,7 @@ export const INITIAL_PRODUCTS: Product[] = [
 ];
 
 export const INITIAL_STORE_SETTINGS: StoreSettings = {
-  brandName: 'Handmade Thread bangles',
+  brandName: 'Ambitionbysha',
   tagline: 'Handcrafted with Love & Elegance ♡',
   announcementText: '✨ Free Shipping on Orders Above ₹999 | New Arrivals Every Week | Handcrafted with Love ✨',
   freeShippingThreshold: 999,

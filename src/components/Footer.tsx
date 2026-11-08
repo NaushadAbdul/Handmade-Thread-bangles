@@ -41,7 +41,7 @@ export const Footer: React.FC = () => {
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#edd0d8] shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left">
             <h3 className="font-serif-luxury text-xl sm:text-2xl font-bold text-[#3b121e]">
-              Join the Handmade Thread bangles Club ♡
+              Join the Ambitionbysha Club ♡
             </h3>
             <p className="text-xs sm:text-sm text-[#8c4e5f] font-light mt-0.5">
               Get exclusive bridal offers, new thread collections & custom styling tips.

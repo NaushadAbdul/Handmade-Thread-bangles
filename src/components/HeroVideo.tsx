@@ -110,7 +110,7 @@ export const HeroVideo: React.FC = () => {
 
               {/* Subtle Bottom Brand Label */}
               <div className="absolute bottom-4 right-4 z-20 text-right text-white drop-shadow-md">
-                <p className="text-xs font-medium tracking-wide">Handmade Thread bangles</p>
+                <p className="text-xs font-medium tracking-wide">Ambitionbysha</p>
                 <p className="text-[10px] text-pink-200">100% Handcrafted Elegance</p>
               </div>
 

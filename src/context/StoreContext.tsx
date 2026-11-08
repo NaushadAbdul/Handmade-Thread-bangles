@@ -172,6 +172,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (saved) {
         const parsed = JSON.parse(saved);
+        if (parsed.brandName === 'Handmade Thread bangles' || !parsed.brandName) {
+          parsed.brandName = 'Ambitionbysha';
+        }
         if (parsed.supportWhatsApp === '+91 98765 43210' || !parsed.supportWhatsApp) {
           parsed.supportWhatsApp = '+91 73964 53236';
         }
@@ -184,7 +187,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (!parsed.qrCodeUrl || parsed.qrCodeUrl.includes('handmadethreadbangles@okaxis')) {
           parsed.qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=ambitionbysha@axl%26pn=Ambition%20by%20Sha%26cu=INR';
         }
-        return { ...INITIAL_STORE_SETTINGS, ...parsed };
+        return { 
+          ...INITIAL_STORE_SETTINGS, 
+          ...parsed, 
+          brandName: parsed.brandName === 'Handmade Thread bangles' ? 'Ambitionbysha' : (parsed.brandName || 'Ambitionbysha') 
+        };
       }
       return INITIAL_STORE_SETTINGS;
     } catch {

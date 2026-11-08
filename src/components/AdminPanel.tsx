@@ -415,7 +415,7 @@ service cloud.firestore {
                       <input
                         type="text"
                         required
-                        placeholder="e.g. Handmade Thread Bangles Studio"
+                        placeholder="e.g. Ambition by Sha"
                         value={payeeNameInput}
                         onChange={(e) => setPayeeNameInput(e.target.value)}
                         className="w-full px-3 py-2 bg-[#faf5f6] border border-[#e8bac7] focus:border-[#8c2a44] focus:bg-white rounded-xl text-xs sm:text-sm text-[#3b121e] outline-none"

@@ -111,7 +111,7 @@ export const AuthModal: React.FC = () => {
         <div className="text-center mb-6">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#faedf1] text-[#8c2a44] text-[11px] font-semibold mb-2">
             <Sparkles className="w-3 h-3 text-[#bd4c6d]" />
-            Handmade Thread bangles
+            Ambitionbysha
           </span>
           <h2 className="font-serif-luxury text-2xl sm:text-3xl font-bold text-[#3b121e]">
             {authSuccessRedirect === 'checkout' 
