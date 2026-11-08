@@ -39,8 +39,41 @@ export const AdminPanel: React.FC = () => {
     updateSettings,
     categories,
     addCategory,
-    deleteCategory
+    deleteCategory,
+    firestoreStatus,
+    syncProductCatalogToCloud
   } = useStore();
+
+  const [copiedRule, setCopiedRule] = useState(false);
+  const [syncingCloud, setSyncingCloud] = useState(false);
+  const [syncCloudSuccess, setSyncCloudSuccess] = useState(false);
+
+  const handleCopyFirestoreRule = () => {
+    const ruleText = `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}`;
+    navigator.clipboard.writeText(ruleText);
+    setCopiedRule(true);
+    setTimeout(() => setCopiedRule(false), 3000);
+  };
+
+  const handleManualCloudSync = async () => {
+    setSyncingCloud(true);
+    try {
+      await syncProductCatalogToCloud();
+      setSyncCloudSuccess(true);
+      setTimeout(() => setSyncCloudSuccess(false), 3000);
+    } catch (e: any) {
+      alert('Could not sync to Firebase yet. Please check Firestore security rules: ' + (e?.message || 'Permission denied'));
+    } finally {
+      setSyncingCloud(false);
+    }
+  };
 
   if (!isAdminOpen) return null;
 
@@ -686,6 +719,62 @@ export const AdminPanel: React.FC = () => {
           {activeTab === 'products' && (
             <div className="space-y-5">
               
+              {/* Live Cloud Sync Status Banner */}
+              {firestoreStatus === 'permission_denied' ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-[#523315] space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold flex items-center gap-1.5 text-amber-900">
+                      <span>⚠️</span> Live Customer Mobile Sync Setup Required
+                    </span>
+                    <button
+                      onClick={handleManualCloudSync}
+                      disabled={syncingCloud}
+                      className="px-2.5 py-1 bg-amber-700 hover:bg-amber-800 text-white rounded-lg font-medium text-[11px] transition-colors"
+                    >
+                      {syncingCloud ? 'Checking...' : syncCloudSuccess ? '✓ Synced!' : '🔄 Retry Cloud Sync'}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-amber-800 leading-relaxed">
+                    To make products you add on this laptop appear live on customer mobile phones and other devices, your Firebase Firestore rules need read/write permissions.
+                  </p>
+                  <div className="bg-white/80 p-2.5 rounded-lg border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-[10px]">
+                    <span className="text-gray-700 select-all">allow read, write: if true;</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleCopyFirestoreRule}
+                        className="px-2 py-1 bg-[#8c2a44] text-white rounded font-sans font-semibold text-[10px] hover:bg-[#721f35]"
+                      >
+                        {copiedRule ? '✓ Rule Copied!' : '📋 Copy Rule'}
+                      </button>
+                      <a
+                        href="https://console.firebase.google.com/project/bangles-236db/firestore/rules"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-800 rounded font-sans font-semibold text-[10px]"
+                      >
+                        Open Firebase Console ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-emerald-900">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="font-semibold">Live Cross-Device Cloud Sync Active</span>
+                    <span className="text-[11px] text-emerald-700 hidden sm:inline">— changes update customer phones in real-time</span>
+                  </div>
+                  <button
+                    onClick={handleManualCloudSync}
+                    disabled={syncingCloud}
+                    className="text-[11px] text-emerald-800 hover:underline font-semibold"
+                  >
+                    {syncingCloud ? 'Syncing...' : syncCloudSuccess ? '✓ Cloud Updated' : 'Push All to Cloud ↗'}
+                  </button>
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm sm:text-base font-bold text-[#3b121e]">

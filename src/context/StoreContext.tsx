@@ -15,6 +15,7 @@ import {
   collection, 
   doc, 
   setDoc, 
+  deleteDoc,
   getDocs, 
   onSnapshot 
 } from 'firebase/firestore';
@@ -23,6 +24,24 @@ export const ADMIN_EMAILS = ['craftedbangles272@gmail.com', 'naushadabdul2006@gm
 export const checkIsAdmin = (email?: string | null): boolean => {
   if (!email) return false;
   return ADMIN_EMAILS.includes(email.toLowerCase().trim());
+};
+
+const AI_PRODUCT_IDS = ['htb-001', 'htb-002', 'htb-003', 'htb-004', 'htb-005', 'htb-006', 'htb-007', 'htb-008'];
+
+export const isAiMockProduct = (p: { id?: string; name?: string }): boolean => {
+  if (!p) return false;
+  if (p.id && (AI_PRODUCT_IDS.includes(p.id) || p.id.startsWith('htb-00'))) return true;
+  const name = (p.name || '').toLowerCase();
+  return (
+    name.includes('royal rani pink') ||
+    name.includes('maroon & antique gold') ||
+    name.includes('pastel blush pearl') ||
+    name.includes('royal peacock blue') ||
+    name.includes('curated bridal blossom') ||
+    name.includes('ambition blossom boutique') ||
+    name.includes('floral pearl latkan') ||
+    name.includes('baby & kids soft pastel')
+  );
 };
 
 interface StoreContextType {
@@ -70,6 +89,10 @@ interface StoreContextType {
 
   settings: StoreSettings;
   updateSettings: (newSettings: Partial<StoreSettings>) => void;
+
+  // Cloud sync status
+  firestoreStatus: 'connected' | 'permission_denied' | 'checking';
+  syncProductCatalogToCloud: () => Promise<void>;
 
   // UI state modals
   isCartOpen: boolean;
@@ -124,17 +147,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
       if (saved) {
         const parsed: Product[] = JSON.parse(saved);
-        // Auto-migrate any old '/src/assets/images' to '/assets/images'
-        return parsed.map(p => ({
-          ...p,
-          image: p.image ? p.image.replace('/src/assets/images', '/assets/images') : p.image
-        }));
+        // Permanently filter out any dummy AI products
+        const clean = parsed
+          .filter(p => !isAiMockProduct(p))
+          .map(p => ({
+            ...p,
+            image: p.image ? p.image.replace('/src/assets/images', '/assets/images') : p.image
+          }));
+        if (clean.length > 0) {
+          return clean;
+        }
       }
       return INITIAL_PRODUCTS;
     } catch {
       return INITIAL_PRODUCTS;
     }
   });
+
+  const [firestoreStatus, setFirestoreStatus] = useState<'connected' | 'permission_denied' | 'checking'>('checking');
 
   // Settings State (contains UPI QR code, UPI ID, brand info)
   const [settings, setSettings] = useState<StoreSettings>(() => {
@@ -229,28 +259,57 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [categories, setCategories] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-      return saved ? JSON.parse(saved) : CATEGORIES;
+      if (saved) {
+        const parsed: string[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (!parsed.includes('Earrings')) {
+            parsed.splice(1, 0, 'Earrings');
+          }
+          return parsed;
+        }
+      }
+      return CATEGORIES;
     } catch {
       return CATEGORIES;
     }
   });
 
-  const addCategory = (name: string) => {
+  const addCategory = async (name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
+    let nextList: string[] = [];
     setCategories(prev => {
       if (prev.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
         return prev;
       }
-      return [...prev, trimmed];
+      nextList = [...prev, trimmed];
+      return nextList;
     });
+    if (nextList.length > 0) {
+      try {
+        await setDoc(doc(db, 'settings', 'store_categories'), { list: nextList }, { merge: true });
+        setFirestoreStatus('connected');
+      } catch (err: any) {
+        if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
+        console.warn('Firestore addCategory error:', err.message);
+      }
+    }
   };
 
-  const deleteCategory = (name: string) => {
+  const deleteCategory = async (name: string) => {
+    let nextList: string[] = [];
     setCategories(prev => {
       const filtered = prev.filter(c => c.toLowerCase() !== name.toLowerCase());
-      return filtered.length > 0 ? filtered : ['All Bangles'];
+      nextList = filtered.length > 0 ? filtered : ['All Bangles'];
+      return nextList;
     });
+    try {
+      await setDoc(doc(db, 'settings', 'store_categories'), { list: nextList });
+      setFirestoreStatus('connected');
+    } catch (err: any) {
+      if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
+      console.warn('Firestore deleteCategory error:', err.message);
+    }
   };
 
   // LocalStorage synchronizers
@@ -337,11 +396,83 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  // Try syncing orders from Firestore if accessible
+  // 1. Products Firestore Real-Time Listener
+  useEffect(() => {
+    try {
+      const prodCol = collection(db, 'products');
+      const unsubscribe = onSnapshot(prodCol, (snapshot) => {
+        setFirestoreStatus('connected');
+        if (!snapshot.empty) {
+          const remoteProducts = snapshot.docs.map(doc => doc.data() as Product);
+          const clean = remoteProducts.filter(p => !isAiMockProduct(p));
+          if (clean.length > 0) {
+            setProducts(clean);
+          }
+        }
+      }, (err) => {
+        if (err.code === 'permission-denied') {
+          setFirestoreStatus('permission_denied');
+        }
+        console.warn('Firestore products listener:', err.message);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      console.warn('Firestore products subscribe error:', e);
+    }
+  }, []);
+
+  // 2. Settings Firestore Real-Time Listener
+  useEffect(() => {
+    try {
+      const settingsDocRef = doc(db, 'settings', 'store_settings');
+      const unsubscribe = onSnapshot(settingsDocRef, (snap) => {
+        setFirestoreStatus('connected');
+        if (snap.exists()) {
+          const data = snap.data() as Partial<StoreSettings>;
+          setSettings(prev => ({ ...prev, ...data }));
+        }
+      }, (err) => {
+        if (err.code === 'permission-denied') {
+          setFirestoreStatus('permission_denied');
+        }
+        console.debug('Firestore settings listener error:', err.message);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      console.debug('Firestore settings subscribe error:', e);
+    }
+  }, []);
+
+  // 3. Categories Firestore Real-Time Listener
+  useEffect(() => {
+    try {
+      const catDocRef = doc(db, 'settings', 'store_categories');
+      const unsubscribe = onSnapshot(catDocRef, (snap) => {
+        setFirestoreStatus('connected');
+        if (snap.exists()) {
+          const data = snap.data();
+          if (Array.isArray(data.list) && data.list.length > 0) {
+            setCategories(data.list);
+          }
+        }
+      }, (err) => {
+        if (err.code === 'permission-denied') {
+          setFirestoreStatus('permission_denied');
+        }
+        console.debug('Firestore categories listener error:', err.message);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      console.debug('Firestore categories subscribe error:', e);
+    }
+  }, []);
+
+  // 4. Try syncing orders from Firestore if accessible
   useEffect(() => {
     try {
       const ordersCol = collection(db, 'orders');
       const unsubscribe = onSnapshot(ordersCol, (snapshot) => {
+        setFirestoreStatus('connected');
         if (!snapshot.empty) {
           const remoteOrders = snapshot.docs.map(doc => doc.data() as Order);
           if (remoteOrders.length > 0) {
@@ -355,7 +486,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
         }
       }, (err) => {
-        // quiet fallback to local storage
+        if (err.code === 'permission-denied') {
+          setFirestoreStatus('permission_denied');
+        }
         console.debug('Firestore orders listener:', err.message);
       });
       return () => unsubscribe();
@@ -547,31 +680,82 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentUser(null);
   };
 
-  // Product management for Admin
-  const addProduct = (prodData: Omit<Product, 'id'>) => {
+  // Product management for Admin (with real-time Firestore synchronization)
+  const addProduct = async (prodData: Omit<Product, 'id'>) => {
     if (prodData.category && !categories.some(c => c.toLowerCase() === prodData.category.toLowerCase())) {
       addCategory(prodData.category);
     }
     const newProduct: Product = {
       ...prodData,
-      id: 'htb-' + Date.now().toString(36),
+      id: 'prod-' + Date.now().toString(36),
       rating: 5.0,
       reviewCount: 1
     };
     setProducts(prev => [newProduct, ...prev]);
+
+    // Push to Firestore for cross-device sync
+    try {
+      await setDoc(doc(db, 'products', newProduct.id), newProduct);
+      setFirestoreStatus('connected');
+    } catch (err: any) {
+      if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
+      console.warn('Firestore addProduct error:', err.message);
+    }
   };
 
-  const updateProduct = (id: string, updates: Partial<Product>) => {
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+
+    // Update in Firestore
+    try {
+      await setDoc(doc(db, 'products', id), updates, { merge: true });
+      setFirestoreStatus('connected');
+    } catch (err: any) {
+      if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
+      console.warn('Firestore updateProduct error:', err.message);
+    }
   };
 
-  const deleteProduct = (id: string) => {
+  const deleteProduct = async (id: string) => {
     setProducts(prev => prev.filter(p => p.id !== id));
+
+    // Delete in Firestore
+    try {
+      await deleteDoc(doc(db, 'products', id));
+      setFirestoreStatus('connected');
+    } catch (err: any) {
+      if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
+      console.warn('Firestore deleteProduct error:', err.message);
+    }
   };
 
   // Settings update for Admin (e.g., QR code, UPI ID, brand banner)
-  const updateSettings = (newSettings: Partial<StoreSettings>) => {
+  const updateSettings = async (newSettings: Partial<StoreSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
+    try {
+      await setDoc(doc(db, 'settings', 'store_settings'), newSettings, { merge: true });
+      setFirestoreStatus('connected');
+    } catch (err: any) {
+      if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
+      console.warn('Firestore updateSettings error:', err.message);
+    }
+  };
+
+  // Manual one-click cloud upload helper
+  const syncProductCatalogToCloud = async () => {
+    try {
+      for (const prod of products) {
+        if (!isAiMockProduct(prod)) {
+          await setDoc(doc(db, 'products', prod.id), prod, { merge: true });
+        }
+      }
+      await setDoc(doc(db, 'settings', 'store_settings'), settings, { merge: true });
+      await setDoc(doc(db, 'settings', 'store_categories'), { list: categories }, { merge: true });
+      setFirestoreStatus('connected');
+    } catch (err: any) {
+      if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
+      throw err;
+    }
   };
 
   // Order creation
@@ -751,6 +935,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       categories,
       addCategory,
       deleteCategory,
+      firestoreStatus,
+      syncProductCatalogToCloud,
     }}>
       {children}
     </StoreContext.Provider>

@@ -2,25 +2,25 @@ import React from 'react';
 import { useStore } from '../context/StoreContext';
 import { CATEGORIES } from '../data/initialData';
 
-interface CategoryItem {
-  name: string;
+interface CategoryMeta {
   emoji: string;
   description: string;
 }
 
-const CATEGORY_ITEMS: CategoryItem[] = [
-  { name: 'All Bangles', emoji: '✨', description: 'Complete Collection' },
-  { name: 'Silk Thread Bangles', emoji: '🧵', description: 'Pure Mulberry Silk' },
-  { name: 'Kundan Bridal Chooda', emoji: '👑', description: 'Royal Wedding Sets' },
-  { name: 'Zari Velvet Bangles', emoji: '💫', description: 'Golden Metallic Thread' },
-  { name: 'Pearl Kada & Latkan', emoji: '🪡', description: 'Tassel & Jhumka Drop' },
-  { name: 'Baby & Kids Bangles', emoji: '🌸', description: 'Soft Skin-Safe Core' },
-  { name: 'Festive Sets', emoji: '🦚', description: 'Festival & Occasion' },
-  { name: 'Gift Hampers', emoji: '🎁', description: 'Luxury Gift Packaging' },
-];
+const CATEGORY_META: Record<string, CategoryMeta> = {
+  'All Bangles': { emoji: '✨', description: 'Complete Collection' },
+  'Earrings': { emoji: '💎', description: 'Handcrafted Earrings' },
+  'Silk Thread Bangles': { emoji: '🧵', description: 'Pure Mulberry Silk' },
+  'Kundan Bridal Chooda': { emoji: '👑', description: 'Royal Wedding Sets' },
+  'Zari Velvet Bangles': { emoji: '💫', description: 'Golden Metallic Thread' },
+  'Pearl Kada & Latkan': { emoji: '🪡', description: 'Tassel & Jhumka Drop' },
+  'Baby & Kids Bangles': { emoji: '🌸', description: 'Soft Skin-Safe Core' },
+  'Festive Sets': { emoji: '🦚', description: 'Festival & Occasion' },
+  'Gift Hampers': { emoji: '🎁', description: 'Luxury Gift Packaging' },
+};
 
 export const CategoryNav: React.FC = () => {
-  const { selectedCategory, setSelectedCategory } = useStore();
+  const { selectedCategory, setSelectedCategory, categories } = useStore();
 
   const handleCategorySelect = (catName: string) => {
     setSelectedCategory(catName);
@@ -48,12 +48,13 @@ export const CategoryNav: React.FC = () => {
 
         {/* Scrollable Categories List */}
         <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-6 overflow-x-auto pb-4 pt-1 no-scrollbar px-2">
-          {CATEGORY_ITEMS.map((cat) => {
-            const isSelected = selectedCategory === cat.name;
+          {categories.map((catName) => {
+            const isSelected = selectedCategory === catName;
+            const meta = CATEGORY_META[catName] || { emoji: '✨', description: 'Handmade Collection' };
             return (
               <button
-                key={cat.name}
-                onClick={() => handleCategorySelect(cat.name)}
+                key={catName}
+                onClick={() => handleCategorySelect(catName)}
                 className="flex flex-col items-center group shrink-0 focus:outline-none transition-transform active:scale-95 cursor-pointer"
               >
                 {/* Rounded Pod Icon */}
@@ -64,7 +65,7 @@ export const CategoryNav: React.FC = () => {
                       : 'bg-white hover:bg-[#faeaf0] text-[#782c40] border border-[#f0cdd8] hover:border-[#e29db1] hover:-translate-y-1'
                   }`}
                 >
-                  <span>{cat.emoji}</span>
+                  <span>{meta.emoji}</span>
                 </div>
 
                 {/* Category Label */}
@@ -73,11 +74,11 @@ export const CategoryNav: React.FC = () => {
                     isSelected ? 'text-[#8c2a44] font-bold' : 'text-[#5a2433] group-hover:text-[#8c2a44]'
                   }`}
                 >
-                  {cat.name}
+                  {catName}
                 </span>
 
                 <span className="text-[10px] text-[#a06877] hidden sm:block max-w-[90px] truncate font-light">
-                  {cat.description}
+                  {meta.description}
                 </span>
               </button>
             );
