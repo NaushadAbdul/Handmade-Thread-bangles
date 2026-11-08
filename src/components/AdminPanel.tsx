@@ -76,6 +76,7 @@ service cloud.firestore {
   };
 
   const [activeTab, setActiveTab] = useState<'qr_payments' | 'orders' | 'products' | 'store_settings'>('qr_payments');
+  const [confirmDeleteOrderId, setConfirmDeleteOrderId] = useState<string | null>(null);
 
   // QR Code & Payment editing state
   const [upiIdInput, setUpiIdInput] = useState(settings.upiId);
@@ -580,18 +581,36 @@ service cloud.firestore {
                             <span>Invoice</span>
                           </button>
 
-                          <button
-                            onClick={() => {
-                              if (window.confirm(`Are you sure you want to delete order #${ord.id}?`)) {
-                                deleteOrder(ord.id);
-                              }
-                            }}
-                            className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold hover:bg-rose-100 hover:text-rose-700 transition-colors flex items-center gap-1 cursor-pointer"
-                            title="Delete this order"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>Delete</span>
-                          </button>
+                          {confirmDeleteOrderId === ord.id ? (
+                            <div className="flex items-center gap-1.5 animate-in fade-in duration-150">
+                              <button
+                                onClick={() => {
+                                  deleteOrder(ord.id);
+                                  setConfirmDeleteOrderId(null);
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition-colors shadow-xs cursor-pointer flex items-center gap-1"
+                                title="Confirm delete order"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Confirm Delete</span>
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteOrderId(null)}
+                                className="px-2 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium transition-colors cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setConfirmDeleteOrderId(ord.id)}
+                              className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-xs font-semibold hover:bg-rose-100 hover:text-rose-700 transition-colors flex items-center gap-1 cursor-pointer"
+                              title="Delete this order individually"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete</span>
+                            </button>
+                          )}
                         </div>
                       </div>
 

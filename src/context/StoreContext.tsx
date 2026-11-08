@@ -474,24 +474,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  // 4. Try syncing orders from Firestore if accessible
+  // 4. Orders Firestore Real-Time Listener
   useEffect(() => {
     try {
       const ordersCol = collection(db, 'orders');
       const unsubscribe = onSnapshot(ordersCol, (snapshot) => {
         setFirestoreStatus('connected');
-        if (!snapshot.empty) {
-          const remoteOrders = snapshot.docs.map(doc => doc.data() as Order);
-          if (remoteOrders.length > 0) {
-            setOrders(prev => {
-              // merge unique by id
-              const map = new Map<string, Order>();
-              prev.forEach(o => map.set(o.id, o));
-              remoteOrders.forEach(o => map.set(o.id, o));
-              return Array.from(map.values());
-            });
-          }
-        }
+        const remoteOrders = snapshot.docs.map(doc => doc.data() as Order);
+        // Sort newest first
+        remoteOrders.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        setOrders(remoteOrders);
       }, (err) => {
         if (err.code === 'permission-denied') {
           setFirestoreStatus('permission_denied');
@@ -758,9 +750,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       await setDoc(doc(db, 'settings', 'store_settings'), settings, { merge: true });
       await setDoc(doc(db, 'settings', 'store_categories'), { list: categories }, { merge: true });
-      for (const order of orders) {
-        await setDoc(doc(db, 'orders', order.id), order, { merge: true });
-      }
       setFirestoreStatus('connected');
     } catch (err: any) {
       if (err.code === 'permission-denied') setFirestoreStatus('permission_denied');
