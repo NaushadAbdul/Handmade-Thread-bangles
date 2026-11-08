@@ -25,7 +25,7 @@ export const GiftSection: React.FC = () => {
             <div className="lg:col-span-5 order-2 lg:order-1 flex justify-center">
               <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white max-w-sm w-full group">
                 <img
-                  src="/src/assets/images/bangles_bridal_gift_box_1794119601859.jpg"
+                  src="/assets/images/bangles_bridal_gift_box_1794119601859.jpg"
                   alt="Curated Bridal Bangle Gift Hamper Box"
                   className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
                 />

@@ -39,7 +39,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
           onError={(e) => {
             // graceful fallback
-            (e.target as HTMLImageElement).src = '/src/assets/images/bangles_silk_kundan_set_1794119599359.jpg';
+            (e.target as HTMLImageElement).src = '/assets/images/bangles_silk_kundan_set_1794119599359.jpg';
           }}
         />
 

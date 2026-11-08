@@ -71,7 +71,7 @@ export const AdminPanel: React.FC = () => {
   const [newCategoryManagerInput, setNewCategoryManagerInput] = useState('');
   const [newProdPrice, setNewProdPrice] = useState(699);
   const [newProdOrigPrice, setNewProdOrigPrice] = useState(999);
-  const [newProdImage, setNewProdImage] = useState('/src/assets/images/bangles_silk_kundan_set_1794119599359.jpg');
+  const [newProdImage, setNewProdImage] = useState('/assets/images/bangles_silk_kundan_set_1794119599359.jpg');
   const [newProdDesc, setNewProdDesc] = useState('');
   const [newProdMaterial, setNewProdMaterial] = useState('Mulberry Silk Thread, Brass Core, Kundan Work');
   const [newProdCraftingTime, setNewProdCraftingTime] = useState('2-3 Days Handcrafted');

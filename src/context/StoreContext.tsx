@@ -122,7 +122,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-      return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+      if (saved) {
+        const parsed: Product[] = JSON.parse(saved);
+        // Auto-migrate any old '/src/assets/images' to '/assets/images'
+        return parsed.map(p => ({
+          ...p,
+          image: p.image ? p.image.replace('/src/assets/images', '/assets/images') : p.image
+        }));
+      }
+      return INITIAL_PRODUCTS;
     } catch {
       return INITIAL_PRODUCTS;
     }

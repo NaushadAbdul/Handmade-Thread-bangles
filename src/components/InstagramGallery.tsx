@@ -4,27 +4,27 @@ import { Instagram, Heart } from 'lucide-react';
 export const InstagramGallery: React.FC = () => {
   const PHOTOS = [
     {
-      img: '/src/assets/images/bangles_silk_kundan_set_1794119599359.jpg',
+      img: '/assets/images/bangles_silk_kundan_set_1794119599359.jpg',
       tag: '@aarti_weddings',
       caption: 'My bridal silk thread kundan bangles turned out even more breathtaking in person! ♡'
     },
     {
-      img: '/src/assets/images/bangles_velvet_zari_stack_1794119599712.jpg',
+      img: '/assets/images/bangles_velvet_zari_stack_1794119599712.jpg',
       tag: '@divya_sharma',
       caption: 'Sangeet night styling with the royal maroon zari stack. Perfectly matched my lehenga!'
     },
     {
-      img: '/src/assets/images/bangles_pastel_baby_pink_1794119601159.jpg',
+      img: '/assets/images/bangles_pastel_baby_pink_1794119601159.jpg',
       tag: '@sneha.creations',
       caption: 'Soft pastel pink silk threads with delicate seed pearls for haldi & mehendi celebrations.'
     },
     {
-      img: '/src/assets/images/bangles_royal_blue_festive_1794119601242.jpg',
+      img: '/assets/images/bangles_royal_blue_festive_1794119601242.jpg',
       tag: '@meera.kapoor',
       caption: 'Peacock blue & gold zardozi shine. So many compliments from all relatives!'
     },
     {
-      img: '/src/assets/images/bangles_bridal_gift_box_1794119601859.jpg',
+      img: '/assets/images/bangles_bridal_gift_box_1794119601859.jpg',
       tag: '@pooja_bridesmaid',
       caption: 'The satin gift box presentation made my sister tear up with joy.'
     },
