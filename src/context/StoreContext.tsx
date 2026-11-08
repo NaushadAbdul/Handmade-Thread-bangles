@@ -758,6 +758,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // Automatically attempt background cloud push whenever admin is logged in
+  useEffect(() => {
+    if (currentUser?.isAdmin) {
+      syncProductCatalogToCloud().catch(() => {});
+    }
+  }, [currentUser?.isAdmin, products.length]);
+
   // Order creation
   const createOrder = async (orderData: {
     shippingAddress: ShippingAddress;
